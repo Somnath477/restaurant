@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
+import gsap from "gsap";
 
 const images = [
   "/images/hero1.jpg",
@@ -12,25 +13,50 @@ const images = [
 
 export default function HeroSlider() {
   const [index, setIndex] = useState(0);
+  const heroRef = useRef(null);
 
+  // 🔥 Auto slider
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % images.length);
-    }, 4000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, []);
 
-  return (
-    <div className="relative h-screen w-full overflow-hidden">
+  // 🔥 3D mouse parallax (client-safe)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
-      {/* IMAGE SLIDES */}
+    const handleMove = (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 20;
+      const y = (e.clientY / window.innerHeight - 0.5) * 20;
+
+      gsap.to(".hero-content", {
+        x,
+        y,
+        duration: 0.6,
+        ease: "power3.out",
+      });
+    };
+
+    window.addEventListener("mousemove", handleMove);
+    return () => window.removeEventListener("mousemove", handleMove);
+  }, []);
+
+  return (
+    <div ref={heroRef} className="relative h-screen w-full overflow-hidden">
+
+      {/* 🔥 IMAGE SLIDES */}
       {images.map((img, i) => (
         <motion.div
           key={i}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: i === index ? 1 : 0 }}
-          transition={{ duration: 1.2 }}
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{
+            opacity: i === index ? 1 : 0,
+            scale: i === index ? 1 : 1.1,
+          }}
+          transition={{ duration: 1.5 }}
           className="absolute inset-0"
           style={{
             backgroundImage: `url(${img})`,
@@ -40,74 +66,75 @@ export default function HeroSlider() {
         />
       ))}
 
-      {/* DARK OVERLAY CONTENT */}
-      <div className="absolute inset-0 bg-black/70 flex flex-col justify-center items-center text-center px-4">
+      {/* 🔥 OVERLAY */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/90"></div>
 
-        {/* SMALL TAGLINE */}
+      {/* 🔥 CONTENT */}
+      <div className="hero-content relative z-10 h-full flex flex-col justify-center items-center text-center px-6">
+
+        {/* TAG */}
         <motion.p
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-yellow-400 tracking-widest uppercase text-sm mb-3"
+          className="text-yellow-400 tracking-[0.3em] uppercase text-xs mb-4"
         >
-          Fine Dining • Since 2020
+          Fine Dining Experience
         </motion.p>
 
-        {/* MAIN HEADING */}
+        {/* HEADING */}
         <motion.h1
-          initial={{ y: 40, opacity: 0 }}
+          initial={{ y: 60, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="text-5xl md:text-7xl font-extrabold text-white leading-tight"
+          transition={{ duration: 1 }}
+          className="text-5xl md:text-7xl font-semibold text-white leading-tight"
         >
           Spice Garden
+          <br />
+          <span className="text-yellow-400">
+            A Taste You’ll Remember
+          </span>
         </motion.h1>
-
-        {/* SUBTITLE */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="italic text-gray-400 mt-2"
-        >
-          “Where every flavor tells a story”
-        </motion.p>
 
         {/* DESCRIPTION */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-5 text-gray-300 max-w-xl text-lg"
+          transition={{ delay: 0.5 }}
+          className="mt-6 text-gray-300 max-w-xl text-lg"
         >
-          Indulge in rich flavors, handcrafted dishes, and a luxurious ambience
-          that transforms every meal into an unforgettable experience.
+          Experience handcrafted dishes, premium ambience, and unforgettable flavors.
         </motion.p>
 
-        {/* CTA BUTTONS */}
+        {/* CTA */}
         <motion.div
-          initial={{ y: 20, opacity: 0 }}
+          initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="flex gap-4 mt-8 flex-wrap justify-center"
+          transition={{ delay: 0.8 }}
+          className="flex gap-5 mt-10 flex-wrap justify-center"
         >
           <a
             href="/menu"
-            className="bg-yellow-400 text-black px-7 py-3 rounded-full font-semibold hover:scale-105 transition"
+            className="px-8 py-3 rounded-full text-black font-semibold bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-500 shadow-lg hover:shadow-yellow-400/50 hover:scale-105 transition"
           >
             Explore Menu
           </a>
 
           <a
             href="/reservation"
-            className="border border-yellow-400 text-yellow-400 px-7 py-3 rounded-full hover:bg-yellow-400 hover:text-black transition"
+            className="px-8 py-3 rounded-full text-yellow-400 border border-yellow-400 hover:bg-yellow-400 hover:text-black transition"
           >
-            Book a Table
+            Book Table
           </a>
         </motion.div>
 
-        {/* TRUST LINE */}
+        {/* TRUST */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
           className="mt-6 text-gray-400 text-sm"
         >
-          ⭐ Rated 4.8 by 500+ happy customers
+          ⭐ 4.8 Rating • 500+ Happy Customers
         </motion.p>
 
       </div>
